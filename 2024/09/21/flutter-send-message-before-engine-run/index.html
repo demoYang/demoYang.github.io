@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sending a message before the FlutterEngine has been run. - Hexo</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="Fechin,"> 
+    <meta name="description" content="问题 : Sending a message before the FlutterEngine has been run.在sentry上遇到一个问题, 说是引擎还没有运行,就发送message, ,"> 
+    <meta name="author" content="John Doe"> 
+    <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    
+    
+    
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="Sending a message before the FlutterEngine has been run. - Hexo"/>
+    <meta name="twitter:description" content="问题 : Sending a message before the FlutterEngine has been run.在sentry上遇到一个问题, 说是引擎还没有运行,就发送message, ,"/>
+    
+    
+    
+    
+    <meta property="og:site_name" content="Hexo"/>
+    <meta property="og:type" content="object"/>
+    <meta property="og:title" content="Sending a message before the FlutterEngine has been run. - Hexo"/>
+    <meta property="og:description" content="问题 : Sending a message before the FlutterEngine has been run.在sentry上遇到一个问题, 说是引擎还没有运行,就发送message, ,"/>
+    
+<link rel="stylesheet" href="/css/diaspora.css">
+
+    <script>window.searchDbPath = "/search.xml";</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Hexo</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="http://example.com"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Sending a message before the FlutterEngine has been run.</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Sending a message before the FlutterEngine has been run.</h1>
+        <div class="stuff">
+            <span>九月 21, 2024</span>
+            
+
+        </div>
+        <div class="content markdown">
+            <h2 id="问题-Sending-a-message-before-the-FlutterEngine-has-been-run"><a href="#问题-Sending-a-message-before-the-FlutterEngine-has-been-run" class="headerlink" title="问题 : Sending a message before the FlutterEngine has been run."></a>问题 : Sending a message before the FlutterEngine has been run.</h2><p>在<code>sentry</code>上遇到一个问题, 说是引擎还没有运行,就发送<code>message</code>, 一头雾水;<br>在<code>github</code>搜索一下相关的<a target="_blank" rel="noopener" href="https://github.com/flutter/flutter/issues/96901"><code>issue</code></a> </p>
+<h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>OK 整体看下来就是 : <code>flutter engine</code>  已经下线了(用户手动杀掉<code>app</code> 或者<code>app</code> 将要<code>terminate</code>) 触发了<code>detachFromEngineForRegistrar</code>, 这个时候发送了一个信息,所以命中了这个断言<code>NSInternalInconsistencyException</code>;</p>
+<h2 id="确定哪个库"><a href="#确定哪个库" class="headerlink" title="确定哪个库"></a>确定哪个库</h2><p>看下<code>bulgy</code> 相关堆栈信息,确定下哪个库上报的, 如下图</p>
+<p align="center"><img src="/images/screenshot-20240921-092905.png"></p>
+
+<p>应该可以确定是 <code>connectivity_plus</code> 这个三方库;</p>
+<h2 id="确定三方库的版本"><a href="#确定三方库的版本" class="headerlink" title="确定三方库的版本"></a>确定三方库的版本</h2><p>我本地的配置<code>pub.yaml</code> 中的版本配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">connectivity_plus:</span> <span class="string">^2.1.0</span></span><br></pre></td></tr></table></figure>
+<p><code>pub.lock</code> 文件</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">connectivity_plus:</span></span><br><span class="line">    <span class="attr">dependency:</span> <span class="string">&quot;direct main&quot;</span></span><br><span class="line">    <span class="attr">description:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">connectivity_plus</span></span><br><span class="line">      <span class="attr">sha256:</span> <span class="string">&quot;3f8fe4e504c2d33696dac671a54909743bc6a902a9bb0902306f7a2aed7e528e&quot;</span></span><br><span class="line">      <span class="attr">url:</span> <span class="string">&quot;https://pub.flutter-io.cn&quot;</span></span><br><span class="line">    <span class="attr">source:</span> <span class="string">hosted</span></span><br><span class="line">    <span class="attr">version:</span> <span class="string">&quot;2.3.9&quot;</span></span><br></pre></td></tr></table></figure>
+<p>在<code>github</code> 查看 <code>connectivity_plus 2.3.9</code> 分支的代码, 发现是有<code>detachFromEngineForRegistrar</code>相关的处理; </p>
+<p>那为什么还会上报这个异常;</p>
+<h2 id="打包服务器的配置"><a href="#打包服务器的配置" class="headerlink" title="打包服务器的配置"></a>打包服务器的配置</h2><p>虽然我本地<code>pub.yaml</code> 的配置和服务器是一样的, 但是<code>pub.lock</code> 文件可能不一样;<br>同时我也查看了<code>connectivity_plus 2.1.0</code>是没有<code>detachFromEngineForRegistrar</code>的处理,所以确定是<code>connectivity_plus: ^2.1.0</code>搞怪,  </p>
+<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>升级一下<code>yaml</code>文件的配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">connectivity_plus:</span> <span class="string">^2.3.9</span></span><br></pre></td></tr></table></figure>
+
+
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title="0" data-url="http://link.hhtjim.com/163/425570952.mp3"></li>
+                        
+                    
+                        
+                            <li title="1" data-url="http://link.hhtjim.com/163/425570952.mp3"></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+        
+    <div id="gitalk-container" class="comment link"
+		data-enable="false"
+        data-ae="false"
+        data-ci=""
+        data-cs=""
+        data-r=""
+        data-o=""
+        data-a=""
+        data-d="false"
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/typed.js"></script>
+<script src="/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
